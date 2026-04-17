@@ -70,6 +70,15 @@ function init() {
 
     log("System initialized.");
     log("Audio engine ready.");
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => log("App offline-ready."))
+                .catch(err => console.warn("SW register failed", err));
+        });
+    }
 }
 
 function log(msg) {
