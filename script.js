@@ -142,6 +142,16 @@ async function startListening() {
 
     if (isListening) return;
 
+    // Wake Lock to keep screen on while counting
+    if ('wakeLock' in navigator) {
+        try {
+            window.wakeLock = await navigator.wakeLock.request('screen');
+            log("Screen lock active.");
+        } catch (err) {
+            console.warn("Wake lock failed", err);
+        }
+    }
+
     // Activate UI early to provide feedback
     isListening = true;
     statusText.textContent = "Requesting Mic...";
@@ -433,6 +443,14 @@ function stopListening() {
     isListening = false;
     whistleVisualActive = false;
     consecutiveFrames = 0;
+
+    // Release Wake Lock
+    if (window.wakeLock) {
+        window.wakeLock.release().then(() => {
+            window.wakeLock = null;
+            log("Screen lock released.");
+        });
+    }
 
     // Stop the RAF loop and reset bars
     if (vizRafId) { cancelAnimationFrame(vizRafId); vizRafId = null; }
