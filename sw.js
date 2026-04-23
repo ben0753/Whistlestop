@@ -5,7 +5,10 @@ const ASSETS_TO_CACHE = [
   './script.css',
   './script.js',
   './manifest.json',
-  './whistlewise_icon.png'
+  './sw.js',
+  './model/model.json',
+  './model/metadata.json',
+  './model/model.weights.bin'
 ];
 
 self.addEventListener('install', (event) => {

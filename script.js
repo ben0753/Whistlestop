@@ -4,8 +4,10 @@
  */
 
 // ===== CONFIG & STATE =====
-const MODEL_URL = "https://teachablemachine.withgoogle.com/models/0VMcHzFHY/";
+const MODEL_URL = "./model/"; // Default to local for speed/offline
+const MODEL_URL_FALLBACK = "https://teachablemachine.withgoogle.com/models/0VMcHzFHY/";
 const WHISTLE_CLASS = "Pressure cooker whistle";
+const NOISE_CLASS = "Background Noise";
 const DETECTION_COOLDOWN = 5000;
 const PROBABILITY_THRESHOLD = 0.92;
 const CONSECUTIVE_FRAMES_REQUIRED = 2;
@@ -41,6 +43,13 @@ const alertSound = $('alert-sound');
 const progressCircle = $('progress-ring-circle');
 const terminalBody = $('terminal-body');
 const counterRing = $('counter-ring');
+
+// Prob meters
+const whistleFill = $('prob-whistle-fill');
+const whistlePct = $('prob-whistle-pct');
+const noiseFill = $('prob-noise-fill');
+const noisePct = $('prob-noise-pct');
+
 const CIRCUMFERENCE = 2 * Math.PI * 95;
 
 // ===== INIT =====
@@ -98,13 +107,28 @@ async function preloadModel() {
         statusText.textContent = "Loading Model...";
         log("Loading TM model...");
         
-        if (tmLib === window.speechCommands) {
-            classifier = tmLib.create("BROWSER_FFT", undefined, MODEL_URL + "model.json", MODEL_URL + "metadata.json");
-        } else {
-            classifier = tmLib.create(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
+        // Try local first, then fallback
+        let loadUrl = MODEL_URL;
+        
+        const tryLoad = async (url) => {
+            if (tmLib === window.speechCommands) {
+                return tmLib.create("BROWSER_FFT", undefined, url + "model.json", url + "metadata.json");
+            } else {
+                return tmLib.create(url + "model.json", url + "metadata.json");
+            }
+        };
+
+        try {
+            classifier = await tryLoad(MODEL_URL);
+            await classifier.ensureModelLoaded();
+            log("Core: Local engine active.");
+        } catch (e) {
+            log("Local engine failed, using cloud cloud...");
+            classifier = await tryLoad(MODEL_URL_FALLBACK);
+            await classifier.ensureModelLoaded();
+            log("Core: Cloud engine active.");
         }
 
-        await classifier.ensureModelLoaded();
         isModelLoaded = true;
         
         if (!isListening) {
@@ -173,15 +197,32 @@ async function startListening() {
 
             const scores = result.scores;
             const labels = classifier.wordLabels();
-            const idx = labels.indexOf(WHISTLE_CLASS);
+            const whistleIdx = labels.indexOf(WHISTLE_CLASS);
+            const noiseIdx = labels.indexOf(NOISE_CLASS);
 
-            if (idx !== -1 && scores[idx] > PROBABILITY_THRESHOLD) {
+            // Update UI Probability Meters
+            if (whistleIdx !== -1) {
+                const wScore = scores[whistleIdx];
+                whistleFill.style.width = (wScore * 100) + "%";
+                whistlePct.textContent = Math.round(wScore * 100) + "%";
+                
+                // Add pop scale if high probability
+                if (wScore > 0.8) whistleFill.parentElement.classList.add('pulse');
+                else whistleFill.parentElement.classList.remove('pulse');
+            }
+            if (noiseIdx !== -1) {
+                const nScore = scores[noiseIdx];
+                noiseFill.style.width = (nScore * 100) + "%";
+                noisePct.textContent = Math.round(nScore * 100) + "%";
+            }
+
+            if (whistleIdx !== -1 && scores[whistleIdx] > PROBABILITY_THRESHOLD) {
                 consecutiveFrames++;
                 if (consecutiveFrames >= CONSECUTIVE_FRAMES_REQUIRED) {
                     const now = Date.now();
                     if (now - lastDetectionTime > DETECTION_COOLDOWN) {
                         lastDetectionTime = now;
-                        log(`Whistle detected! (${(scores[idx] * 100).toFixed(0)}%)`);
+                        log(`Whistle detected! (${(scores[whistleIdx] * 100).toFixed(0)}%)`);
                         onWhistle();
                     }
                     consecutiveFrames = 0;
@@ -191,9 +232,9 @@ async function startListening() {
             }
         }, {
             includeSpectrogram: false,
-            probabilityThreshold: 0.85, 
+            probabilityThreshold: 0.70, // Lowered slightly for more reactive UI feedback
             overlapFactor: 0.5,
-            invokeCallbackOnNoiseAndUnknown: true // Ensure callback fires frequently to keep context alive
+            invokeCallbackOnNoiseAndUnknown: true 
         });
 
         // Ensure context is active after listen() starts
