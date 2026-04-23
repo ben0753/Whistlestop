@@ -134,21 +134,21 @@ async function preloadModel() {
         // Try local first, then fallback
         let loadUrl = MODEL_URL;
         
-        const tryLoad = async (url) => {
-            if (tmLib === window.speechCommands) {
-                return tmLib.create("BROWSER_FFT", undefined, url + "model.json", url + "metadata.json");
-            } else {
-                return tmLib.create(url + "model.json", url + "metadata.json");
-            }
+        const tryWithTimeout = (url, timeoutMs = 8000) => {
+            return Promise.race([
+                tmLib.create("BROWSER_FFT", undefined, url + "model.json", url + "metadata.json"),
+                new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), timeoutMs))
+            ]);
         };
 
         try {
-            classifier = await tryLoad(MODEL_URL);
+            log("Core: Checking local engine...");
+            classifier = await tryWithTimeout(MODEL_URL);
             await classifier.ensureModelLoaded();
             log("Core: Local engine active.");
         } catch (e) {
-            log("Local engine failed, using cloud cloud...");
-            classifier = await tryLoad(MODEL_URL_FALLBACK);
+            log("Core: Using cloud engine...");
+            classifier = await tryWithTimeout(MODEL_URL_FALLBACK, 15000);
             await classifier.ensureModelLoaded();
             log("Core: Cloud engine active.");
         }
