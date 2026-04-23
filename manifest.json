@@ -1,6 +1,6 @@
 {
-  "name": "WhistleWise AI",
-  "short_name": "WhistleWise",
+  "name": "Whistle Stop AI",
+  "short_name": "Whistle Stop",
   "description": "Smart AI-powered pressure cooker whistle counter.",
   "start_url": "./index.html",
   "display": "standalone",

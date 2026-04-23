@@ -1,4 +1,4 @@
-const CACHE_NAME = 'whistlewise-pwa-v1.3';
+const CACHE_NAME = 'whistle-stop-pwa-v1.4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

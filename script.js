@@ -1,5 +1,5 @@
 /**
- * WhistleWise v1.1.0 — Pressure Cooker Whistle Counter
+ * Whistle Stop v1.1.2 — Pressure Cooker Whistle Counter
  * Teachable Machine Audio Classification Engine
  */
 
@@ -55,7 +55,7 @@ const CIRCUMFERENCE = 2 * Math.PI * 95;
 
 // ===== INIT =====
 function init() {
-    const saved = localStorage.getItem('whistlewise_target');
+    const saved = localStorage.getItem('whistlestop_target');
     if (saved) {
         targetWhistles = parseInt(saved) || 3;
         targetInput.value = targetWhistles;
@@ -576,7 +576,7 @@ targetPlusBtn.addEventListener('click', () => {
 
 startBtn.addEventListener('click', async () => {
     targetWhistles = parseInt(targetInput.value) || 1;
-    localStorage.setItem('whistlewise_target', targetWhistles);
+    localStorage.setItem('whistlestop_target', targetWhistles);
 
     if (!isListening) {
         startBtn.disabled = true;
@@ -642,7 +642,7 @@ resetBtn.addEventListener('click', () => {
 
 targetInput.addEventListener('change', e => {
     targetWhistles = parseInt(e.target.value) || 1;
-    localStorage.setItem('whistlewise_target', targetWhistles);
+    localStorage.setItem('whistlestop_target', targetWhistles);
     updateTargetProgress();
 });
 
