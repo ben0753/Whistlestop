@@ -64,6 +64,29 @@ function init() {
     initVisualizer();
     resetVisualizerBars(); // Set idle state without starting RAF loop
     
+    // Mobile Policy Handling: Show unlock overlay on mobile devices
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+        const unlockOverlay = $('mobile-unlock');
+        const unlockBtn = $('unlock-btn');
+        unlockOverlay.style.display = 'flex';
+        
+        unlockBtn.addEventListener('click', async () => {
+            log("Unlocking audio engine...");
+            // One-touch unlocking of AudioContext and HTML5 Audio
+            const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
+            await tempCtx.resume();
+            
+            alertSound.volume = 0;
+            await alertSound.play().catch(() => {});
+            alertSound.pause();
+            
+            unlockOverlay.style.animation = 'fadeOut 0.3s ease forwards';
+            setTimeout(() => unlockOverlay.remove(), 300);
+            log("Engine unlocked.");
+        });
+    }
+
     // Preload model to fix mobile gesture timeout issues
     preloadModel();
 
