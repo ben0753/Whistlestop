@@ -189,6 +189,15 @@ async function startListening() {
 
     // Start classification
     try {
+        // Mobile Fix: Explicitly create and resume context before library call
+        if (classifier.audioContext) {
+            log(`Ctx State: ${classifier.audioContext.state}`);
+            if (classifier.audioContext.state !== 'running') {
+                log("Force-resuming context...");
+                await classifier.audioContext.resume();
+            }
+        }
+
         await classifier.listen(result => {
             // Self-correction for suspended contexts (crucial for mobile)
             if (classifier.audioContext && classifier.audioContext.state === 'suspended') {
