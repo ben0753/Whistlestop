@@ -131,16 +131,20 @@
 
             <!-- Terminal Logs -->
             <div class="terminal-container">
-                <div class="terminal-header">
-                    <span class="dot-t dot-red"></span>
-                    <span class="dot-t dot-yellow"></span>
-                    <span class="dot-t dot-green"></span>
+                <div class="terminal-header" id="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot-t dot-red"></span>
+                        <span class="dot-t dot-yellow"></span>
+                        <span class="dot-t dot-green"></span>
+                    </div>
                     <span class="terminal-title">system_logs</span>
                 </div>
+                
+                <!-- Probability meters moved inside terminal -->
                 <div class="prob-container" id="prob-container">
                     <div class="prob-row">
                         <div class="prob-label">
-                            <span class="prob-name">CONFIDENCE_WHISTLE</span>
+                            <span class="prob-name">CMD: WHISTLE_CONFIDENCE</span>
                             <span class="prob-pct" id="prob-whistle-pct">0%</span>
                         </div>
                         <div class="prob-track">
@@ -149,7 +153,7 @@
                     </div>
                     <div class="prob-row">
                         <div class="prob-label">
-                            <span class="prob-name">CONFIDENCE_AMBIENT</span>
+                            <span class="prob-name">CMD: AMBIENT_NOISE</span>
                             <span class="prob-pct" id="prob-noise-pct">0%</span>
                         </div>
                         <div class="prob-track">
@@ -157,6 +161,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="terminal-body" id="terminal-body">
                     <div class="log-line">>_ initializing_system...</div>
                 </div>
