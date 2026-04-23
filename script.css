@@ -55,7 +55,7 @@ body.theme-active .blob-3 {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Manrope', system-ui, sans-serif;
   background-color: var(--bg-color);
   color: var(--text-main);
   min-height: 100vh;
@@ -205,13 +205,15 @@ body {
 }
 
 .header h1 {
-  font-size: 1.75rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  background: linear-gradient(135deg, #e0f2fe, #38bdf8, #818cf8);
+  font-family: 'Outfit', sans-serif;
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, #ffffff 0%, #38bdf8 50%, #818cf8 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  display: block;
 }
 
 .subtitle {
@@ -273,8 +275,9 @@ body {
 
 .counter-value {
   font-size: 5.5rem;
-  font-weight: 900;
+  font-weight: 800;
   font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
   background: linear-gradient(180deg, #ffffff 0%, #93c5fd 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -304,8 +307,9 @@ body {
   background: rgba(15, 23, 42, 0.9);
   border: 1px solid var(--panel-border);
   border-radius: 100px;
+  font-family: 'Outfit', sans-serif;
   font-size: 0.7rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--accent-color);
