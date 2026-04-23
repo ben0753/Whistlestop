@@ -9,7 +9,7 @@ const MODEL_URL_FALLBACK = "https://teachablemachine.withgoogle.com/models/0VMcH
 const WHISTLE_CLASS = "Pressure cooker whistle";
 const NOISE_CLASS = "Background Noise";
 const DETECTION_COOLDOWN = 5000;
-const PROBABILITY_THRESHOLD = 0.92;
+const PROBABILITY_THRESHOLD = 0.88; 
 const CONSECUTIVE_FRAMES_REQUIRED = 2;
 let classifier = null;
 let isModelLoaded = false;
@@ -19,6 +19,7 @@ let isListening = false;
 let lastDetectionTime = 0;
 let consecutiveFrames = 0;
 let whistleVisualActive = false;
+activeMode = 'local';
 
 // Alert state
 let dangerVignette = null;
@@ -166,95 +167,61 @@ async function preloadModel() {
 }
 
 async function startListening() {
-    // Security check
-    if (window.location.protocol === 'file:') {
-        statusText.textContent = "Error: Use Local Server";
-        alert("Microphone requires HTTPS or localhost. Use a local server.");
-        return;
-    }
-
-    // Library check
     const tmLib = window.speechCommands || window.tmAudio;
     if (!tmLib) {
         statusText.textContent = "Library Missing";
-        alert("Teachable Machine library not loaded. Check internet and refresh.");
         return;
     }
 
     if (!isModelLoaded || !classifier) {
-        statusText.textContent = "Wait for model...";
-        alert("The AI model is still loading. Please wait a moment and try again.");
-        return;
+        statusText.textContent = "Refreshing Engine...";
+        await preloadModel();
+        if (!isModelLoaded) return;
     }
 
     if (isListening) return;
 
-    // Wake Lock to keep screen on while counting
+    // Wake Lock
     if ('wakeLock' in navigator) {
-        try {
-            window.wakeLock = await navigator.wakeLock.request('screen');
-            log("Screen lock active.");
-        } catch (err) {
-            console.warn("Wake lock failed", err);
-        }
+        try { window.wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
     }
 
-    // Activate UI early to provide feedback
     isListening = true;
-    statusText.textContent = "Requesting Mic...";
     statusBadge.classList.add('listening');
     startBtn.innerHTML = '<i data-lucide="square" class="btn-icon"></i> Stop Counting';
     if (typeof lucide !== 'undefined') lucide.createIcons();
     document.body.classList.add('theme-active');
     counterRing.classList.add('active');
     startVisualizerLoop(); 
-    log("Awaiting audio stream...");
 
-    // Start classification
     try {
-        // Mobile Fix: Explicitly create and resume context before library call
         if (classifier.audioContext) {
-            log(`Ctx State: ${classifier.audioContext.state}`);
-            if (classifier.audioContext.state !== 'running') {
-                log("Force-resuming context...");
-                await classifier.audioContext.resume();
-            }
+            log(`Audio: ${classifier.audioContext.state} @ ${classifier.audioContext.sampleRate}Hz`);
+            await classifier.audioContext.resume();
         }
 
         await classifier.listen(result => {
-            // Self-correction for suspended contexts (crucial for mobile)
-            if (classifier.audioContext && classifier.audioContext.state === 'suspended') {
-                classifier.audioContext.resume();
-            }
-
             const scores = result.scores;
             const labels = classifier.wordLabels();
-            const whistleIdx = labels.indexOf(WHISTLE_CLASS);
-            const noiseIdx = labels.indexOf(NOISE_CLASS);
+            const wIdx = labels.indexOf(WHISTLE_CLASS);
+            const nIdx = labels.indexOf(NOISE_CLASS);
 
-            // Update UI Probability Meters
-            if (whistleIdx !== -1) {
-                const wScore = scores[whistleIdx];
-                whistleFill.style.width = (wScore * 100) + "%";
-                whistlePct.textContent = Math.round(wScore * 100) + "%";
-                
-                // Add pop scale if high probability
-                if (wScore > 0.8) whistleFill.parentElement.classList.add('pulse');
-                else whistleFill.parentElement.classList.remove('pulse');
-            }
-            if (noiseIdx !== -1) {
-                const nScore = scores[noiseIdx];
-                noiseFill.style.width = (nScore * 100) + "%";
-                noisePct.textContent = Math.round(nScore * 100) + "%";
-            }
+            const wScore = wIdx !== -1 ? scores[wIdx] : 0;
+            const nScore = nIdx !== -1 ? scores[nIdx] : 0;
+            
+            // Update UI Meters (very frequently)
+            whistleFill.style.width = (wScore * 100) + "%";
+            whistlePct.textContent = Math.round(wScore * 100) + "%";
+            noiseFill.style.width = (nScore * 100) + "%";
+            noisePct.textContent = Math.round(nScore * 100) + "%";
 
-            if (whistleIdx !== -1 && scores[whistleIdx] > PROBABILITY_THRESHOLD) {
+            if (wScore > PROBABILITY_THRESHOLD) {
                 consecutiveFrames++;
                 if (consecutiveFrames >= CONSECUTIVE_FRAMES_REQUIRED) {
                     const now = Date.now();
                     if (now - lastDetectionTime > DETECTION_COOLDOWN) {
                         lastDetectionTime = now;
-                        log(`Whistle detected! (${(scores[whistleIdx] * 100).toFixed(0)}%)`);
+                        log(`Whistle! (${(wScore * 100).toFixed(0)}%)`);
                         onWhistle();
                     }
                     consecutiveFrames = 0;
@@ -264,37 +231,16 @@ async function startListening() {
             }
         }, {
             includeSpectrogram: false,
-            probabilityThreshold: 0.70, // Lowered slightly for more reactive UI feedback
+            probabilityThreshold: 0.50, // High-frequency updates for smooth UI
             overlapFactor: 0.5,
             invokeCallbackOnNoiseAndUnknown: true 
         });
 
-        // Ensure context is active after listen() starts
-        if (classifier.audioContext) {
-            if (classifier.audioContext.state === 'suspended') {
-                log("Resuming audio context...");
-                await classifier.audioContext.resume();
-            }
-            log(`Engine live (${classifier.audioContext.sampleRate}Hz)`);
-        } else {
-            log("Engine live (Standard Mode)");
-        }
         statusText.textContent = "Listening...";
+        log("Engine active.");
     } catch (err) {
-        console.error("Classification error:", err);
         statusText.textContent = "Mic Error";
-        log("Mic Error: " + err.message);
-        
-        // Detailed troubleshooting logs for mobile users
-        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-            log("Permission denied. Check browser settings.");
-            alert("Microphone access denied. Please allow microphone access in your browser settings and try again.");
-        } else if (err.name === 'NotFoundError') {
-            log("No microphone detected.");
-        } else {
-            alert("Microphone connection failed: " + err.message);
-        }
-        
+        log("Error: " + err.message);
         stopListening();
     }
 }

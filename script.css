@@ -594,38 +594,54 @@ body {
   opacity: 0.6;
 }
 
-/* ===== FOOTER ===== */
+/* ===== FOOTER (DEVELOPER TAG) ===== */
 .footer {
-  margin-top: 1.5rem;
+  margin-top: auto;
+  padding: 2rem 0 1rem;
   text-align: center;
-  color: var(--text-muted);
-  font-size: 0.78rem;
-  font-weight: 500;
-  animation: float 4s ease-in-out infinite;
 }
 
-.footer .author {
+.dev-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 1rem;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--panel-border);
+  border-radius: 100px;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3);
+  animation: tagFloat 5s ease-in-out infinite;
+}
+
+.dev-tag:hover {
+  transform: translateY(-5px) scale(1.05);
+  background: rgba(30, 41, 59, 0.9);
+  border-color: var(--accent-color);
+  color: #fff;
+  box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.4), 0 0 20px -5px var(--accent-glow);
+}
+
+.dev-tag .tag-highlight {
   color: var(--accent-color);
   font-weight: 800;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
 }
 
-.footer .author:hover {
-  color: #fff;
-  text-shadow: 0 0 12px var(--accent-glow);
-}
-
-.footer .highlight {
-  color: #fb7185;
-  font-weight: 700;
-  text-shadow: 0 0 8px rgba(251, 113, 133, 0.3);
-}
-
-@keyframes float {
+@keyframes tagFloat {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Fix for prob-label alignment */
+.prob-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 /* ===== STEAM PARTICLES ===== */
