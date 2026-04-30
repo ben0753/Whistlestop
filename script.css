@@ -143,13 +143,32 @@ body {
 .card {
   border: 1px solid var(--glass-border);
   border-radius: var(--card-radius);
-  padding: 2rem 1.75rem;
+  padding: 2.25rem 2rem;
   text-align: center;
   overflow: hidden;
   position: relative;
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  transition: box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, box-shadow;
-  box-shadow: 0 25px 80px -15px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 30px 100px -20px rgba(0, 0, 0, 0.6);
+  animation: cardEntry 1.2s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes cardEntry {
+  from { opacity: 0; transform: translateY(40px) scale(0.96); filter: blur(15px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+.card-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent, rgba(255,255,255,0.08));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 .card:hover {
@@ -306,8 +325,71 @@ body {
   gap: 0.5rem;
 }
 
-.btn-primary { background: var(--primary-gradient); color: white; box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3); }
-.btn-secondary { background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--panel-border); margin-top: 0.5rem; }
+.btn-primary:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 15px 35px rgba(14, 165, 233, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-secondary:hover {
+  background: rgba(255,255,255,0.08);
+  color: var(--text-main);
+  border-color: rgba(255,255,255,0.2);
+}
+
+/* ===== VISUALIZER ===== */
+.visualizer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  height: 34px;
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+  perspective: 1000px;
+}
+
+.bar {
+  width: 5px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  transition: transform 0.1s ease, background 0.3s ease, box-shadow 0.3s ease;
+  transform-origin: center;
+}
+
+.bar.active {
+  background: var(--accent-color);
+  box-shadow: 0 0 15px var(--accent-glow);
+}
+
+/* ===== PARTICLES ===== */
+.steam-particle {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  filter: blur(5px);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.ember {
+  position: absolute;
+  background: #f97316;
+  border-radius: 50%;
+  box-shadow: 0 0 12px #f97316;
+  pointer-events: none;
+  animation: emberRise linear forwards;
+}
+
+@keyframes emberRise {
+  0% { transform: translateY(0) scale(1) rotate(0); opacity: 1; }
+  100% { transform: translateY(-100vh) scale(0.4) rotate(360deg); opacity: 0; }
+}
 
 /* ===== PROBABILITY METERS (TERMINAL INTEGRATED) ===== */
 .prob-container {
@@ -574,11 +656,37 @@ body {
 }
 
 .success-overlay h2 {
-  font-size: 4rem;
+  font-size: 5rem;
   font-weight: 900;
-  margin-bottom: 0.3rem;
-  text-shadow: 0 0 30px rgba(255, 255, 255, 0.4), 0 3px 15px rgba(0, 0, 0, 0.3);
-  animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), textPulse 1.5s ease-in-out infinite 0.4s;
+  margin-bottom: 0.2rem;
+  text-shadow: 0 0 40px rgba(255, 255, 255, 0.5), 0 5px 20px rgba(0, 0, 0, 0.4);
+  animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), textPulse 1.5s ease-in-out infinite 0.5s;
+}
+
+.whistle-count-display {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 1.5rem 0;
+  padding: 0.6rem 1.2rem;
+  background: rgba(0,0,0,0.3);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.9);
+}
+
+.btn-reset-full {
+  max-width: 280px;
+  background: white;
+  color: #dc2626;
+  font-weight: 900;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+.btn-reset-full:hover {
+  transform: translateY(-3px) scale(1.02);
+  background: #f8fafc;
 }
 
 @keyframes textPulse {
