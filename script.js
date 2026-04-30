@@ -19,7 +19,7 @@ let isListening = false;
 let lastDetectionTime = 0;
 let consecutiveFrames = 0;
 let whistleVisualActive = false;
-activeMode = 'local';
+let activeMode = 'local';
 
 // Alert state
 let dangerVignette = null;
