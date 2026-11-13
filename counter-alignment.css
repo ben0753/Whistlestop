@@ -1,0 +1,18 @@
+/* Keep the progress SVG and count layered in the same centered counter area. */
+.counter-container {
+  display: grid;
+  place-items: center;
+}
+
+.counter-container .progress-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.counter-container .counter-value {
+  position: relative;
+  z-index: 1;
+}
